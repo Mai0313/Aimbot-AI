@@ -18,5 +18,5 @@ data:
   predict_image_path: ./data/images/test
 
 output_model:
-  save_prediction: False
+  save_prediction: True
   yolov8_model_export_format: onnx
