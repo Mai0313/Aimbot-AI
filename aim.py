@@ -3,9 +3,12 @@ from typing import Optional
 
 from omegaconf import OmegaConf
 from pydantic import BaseModel, Field
+from rich.console import Console
 
 # from src.click import MouseController, ScreenShot
 from src.pred import PoseDetectionPredict
+
+console = Console()
 
 
 class BodyDetection(BaseModel):
@@ -47,4 +50,4 @@ if __name__ == "__main__":
         upper_body = human_skeleton[3:9]
         lower_body = human_skeleton[9:]
         aim_position = random.choice(head)
-        print(aim_position)
+        console.log(aim_position)
