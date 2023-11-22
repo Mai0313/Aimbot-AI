@@ -16,3 +16,4 @@ pyautogui
 onnxruntime
 omegaconf
 rich
+dvc_gdrive
