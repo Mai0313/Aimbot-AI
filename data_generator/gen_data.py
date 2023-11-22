@@ -2,10 +2,9 @@ import datetime
 import hashlib
 import os
 import time
-from typing import Optional, Union
+from typing import Optional
 
 import pyautogui
-from pydantic import BaseModel, Field, model_validator
 from rich.console import Console
 
 pyautogui.PAUSE = 1
@@ -14,14 +13,11 @@ pyautogui.FAILSAFE = True
 console = Console()
 
 
-class ScreenShot(BaseModel):
-    output_path_folder: str = Field(..., frozen=True)
-    capture_percent: Optional[float] = Field(1.0, ge=0, le=1.0)
-
-    @model_validator(mode="before")
-    def check_output_path_folder(cls, values):
-        os.makedirs(values["output_path_folder"], exist_ok=True)
-        return values
+class ScreenShot:
+    def __init__(self, output_path_folder, capture_percent):
+        self.output_path_folder: str = output_path_folder
+        self.capture_percent: Optional[float] = capture_percent
+        os.makedirs(self.output_path_folder, exist_ok=True)
 
     def take_screenshot(self):
         now = datetime.datetime.now()

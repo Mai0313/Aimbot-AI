@@ -1,4 +1,3 @@
 pyautogui
-pydantic
 rich
 pyinstaller
