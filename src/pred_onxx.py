@@ -39,4 +39,3 @@ if __name__ == "__main__":
 
     # Run prediction
     results = predictor.predict()
-    print(results)
