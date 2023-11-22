@@ -1,0 +1,4 @@
+pyautogui
+pydantic
+rich
+pyinstaller
