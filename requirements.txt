@@ -1,49 +1,18 @@
---index-url https://pypi.org/simple
+--index-url http://swrd-mirror.mediatek.inc/repository/pypi/simple
 --extra-index-url https://download.pytorch.org/whl/cu118
 torch==2.1.1+cu118
 torchvision==0.16.1+cu118
 torchaudio==2.1.1+cu118
 torchtext
-
-# --index-url https://pypi.org/simple
-# --extra-index-url https://download.pytorch.org/whl/cu116
-# torch==1.12.1+cu116
-# torchvision==0.13.1+cu116
-# torchaudio==0.12.1
-# torchtext
-
-lightning==2.1.2
-mlflow
-pydantic
-SQLAlchemy
-aim<4.0.0
-pre-commit
-dvc
-dvc[s3]
-rich
-hydra-core
-hydra-colorlog
-hydra-optuna-sweeper
-opencv-contrib-python
-matplotlib
-rasterio
-Pillow
-pyrootutils
-shapely
-rootutils
-tensorboard
-tensorboardX
-wandb
-fire
-pytest
-autoroot
-autorootcwd
-sh
+ultralytics
 ipykernel
 ipywidgets
-orjsonl
-pandas
-pyarrow
-fastparquet
-sentencepiece
-transformers
+notebook
+autoroot
+autorootcwd
+rootutils
+pydantic
+pyautogui
+onnxruntime
+omegaconf
+rich
