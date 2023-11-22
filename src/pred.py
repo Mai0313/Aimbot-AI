@@ -51,6 +51,8 @@ class PoseDetectionPredict(BaseModel):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
         model = YOLO(self.best_model_path)
+        if isinstance(self.predict_image_path, list):
+            self.predict_image_path = self.predict_image_path[:50]
 
         results = model.predict(
             self.predict_image_path, save=self.save_prediction, stream=True, conf=0.5
