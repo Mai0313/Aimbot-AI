@@ -35,7 +35,6 @@ jobs:
           pip install -r requirements.txt pyinstaller
           pyinstaller --onefile gen_data.py
       # Optionally verify that it works (provided that it does not need user interaction)
-      - run: ./dist/gen_data.exe
       - uses: actions/upload-artifact@v3
         with:
           path: dist/*
