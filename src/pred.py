@@ -35,27 +35,16 @@ class GetKeypoint(BaseModel):
 class PoseDetectionPredict(BaseModel):
     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
     best_model_path: str = Field(..., pattern=r".*\.pt$", frozen=True)
-    predict_image_path: Union[str, list]
 
     save_prediction: Optional[bool] = False
 
-    @model_validator(mode="before")
-    def get_predict_image_path(cls, values):
-        if os.path.isdir(values["predict_image_path"]):
-            predict_images = [f for f in os.listdir(values["predict_image_path"])]
-            predict_images = [f"{values['predict_image_path']}/{f}" for f in predict_images]
-            values["predict_image_path"] = predict_images
-        return values
-
-    def predict(self):
+    def predict(self, predict_image_path: str):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
         model = YOLO(self.best_model_path)
-        if isinstance(self.predict_image_path, list):
-            self.predict_image_path = self.predict_image_path[:50]
 
         results = model.predict(
-            self.predict_image_path, save=self.save_prediction, stream=True, conf=0.5
+            predict_image_path, save=self.save_prediction, stream=True, conf=0.5
         )
         for result in results:
             # This part is not in used, but it is useful to know.
@@ -65,7 +54,44 @@ class PoseDetectionPredict(BaseModel):
             probs = result.probs
             skeleton = keypoints.xy
             skeleton = skeleton.cpu().numpy()
+        console.log(f"{len(skeleton)} people detected")
         return boxes, masks, probs, skeleton
+
+
+# class PoseDetectionPredict(BaseModel):
+#     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
+#     best_model_path: str = Field(..., pattern=r".*\.pt$", frozen=True)
+#     predict_image_path: Union[str, list]
+
+#     save_prediction: Optional[bool] = False
+
+#     @model_validator(mode="before")
+#     def get_predict_image_path(cls, values):
+#         if os.path.isdir(values["predict_image_path"]):
+#             predict_images = [f for f in os.listdir(values["predict_image_path"])]
+#             predict_images = [f"{values['predict_image_path']}/{f}" for f in predict_images]
+#             values["predict_image_path"] = predict_images
+#         return values
+
+#     def predict(self):
+#         console.log("Start prediction...")
+#         model = YOLO(self.yolov8_model_weights)
+#         model = YOLO(self.best_model_path)
+#         if isinstance(self.predict_image_path, list):
+#             self.predict_image_path = self.predict_image_path[:50]
+
+#         results = model.predict(
+#             self.predict_image_path, save=self.save_prediction, stream=True, conf=0.5
+#         )
+#         for result in results:
+#             # This part is not in used, but it is useful to know.
+#             boxes = result.boxes
+#             masks = result.masks
+#             keypoints = result.keypoints
+#             probs = result.probs
+#             skeleton = keypoints.xy
+#             skeleton = skeleton.cpu().numpy()
+#         return boxes, masks, probs, skeleton
 
 
 if __name__ == "__main__":
@@ -80,7 +106,8 @@ if __name__ == "__main__":
     pose_detection_eval = PoseDetectionPredict(
         yolov8_model_weights=yolov8_model_weights,
         best_model_path=best_model_path,
-        predict_image_path=predict_image_path,
         save_prediction=save_prediction,
     )
-    boxes, masks, probs, skeleton = pose_detection_eval.predict()
+    images = os.listdir(predict_image_path)
+    for image in images:
+        boxes, masks, probs, skeleton = pose_detection_eval.predict(predict_image_path=image)
