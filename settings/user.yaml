@@ -1,0 +1,4 @@
+aim:
+  aim_mode: random  # random, head-only, body-only
+  aim_priority: head # head, upper-body, lower-body
+  aim_acceptable_angle: 30.0
