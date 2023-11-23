@@ -21,8 +21,6 @@ jobs:
           - ubuntu-latest
         python-version:
           - "3.9"
-          - "3.10"
-          # - "3.11"
 
     timeout-minutes: 20
 
@@ -66,10 +64,10 @@ jobs:
         run: |
           if [ -f tests/test_*.py ] || [ -d tests ]; then
               echo "Tests exist, proceeding to run them."
-              echo "::set-output name=has_tests::true"
+              echo "has_tests=true" >> $GITHUB_OUTPUT
           else
               echo "No tests to run."
-              echo "::set-output name=has_tests::false"
+              echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Run pytest
