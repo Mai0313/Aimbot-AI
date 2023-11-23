@@ -9,6 +9,11 @@ on:
       - master
       - release/*
 
+env:
+  REQUIREMENTS_FILE: data_generator/requirements.txt
+  PYINSTALLER_FILE: data_generator/screenshot.py
+  ARTIFACT_NAME: screenshot
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -28,12 +33,66 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
+          # # Enable these three lines if you run on act
+          # token: ${{ secrets.GITHUB_TOKEN }}
+          # cache: 'pip'
+
+      - name: Check ${{ env.REQUIREMENTS_FILE }} exists (Linux)
+        id: checkfile_linux
+        run: |
+          if [ -f ${{ env.REQUIREMENTS_FILE }} ]; then
+            echo "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "No ${{ env.REQUIREMENTS_FILE }} to build."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        if: runner.os == 'Linux'
+
+      - name: Check ${{ env.REQUIREMENTS_FILE }} exists (Windows)
+        id: checkfile_windows
+        run: |
+          if (Test-Path "${{ env.REQUIREMENTS_FILE }}") {
+            Write-Output "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=true"
+          } else {
+            Write-Output "No ${{ env.REQUIREMENTS_FILE }} to build."
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=false"
+          }
+        shell: pwsh
+        if: runner.os == 'Windows'
 
       - name: build exe
+        if: steps.checkfile_linux.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         run: |
-          pip install -r data_generator/requirements.txt
-          pyinstaller --onefile data_generator/screenshot.py
+          pip install -r ${{ env.REQUIREMENTS_FILE }}
+          pyinstaller --onefile ${{ env.PYINSTALLER_FILE }}
+
       # Optionally verify that it works (provided that it does not need user interaction)
       - uses: actions/upload-artifact@v3
+        if: steps.checkfile_linux.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         with:
+          name: ${{ env.ARTIFACT_NAME }}
           path: dist/*
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_id }}
+          release_name: Release ${{ github.run_id }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./dist/${{ env.ARTIFACT_NAME }}
+          asset_name: ${{ env.ARTIFACT_NAME }}
+          asset_content_type: application/octet-stream
