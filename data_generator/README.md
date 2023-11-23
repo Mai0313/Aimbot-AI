@@ -8,4 +8,4 @@
 
 ![實際運行](imgs/image.png)
 
-完整代碼請查閱 [`./data_generator/gen_data.py`](https://github.com/Mai0313/Aimbot-AI/blob/master/data_generator/gen_data.py)
+完整代碼請查閱 [`./data_generator/screenshot.py`](https://github.com/Mai0313/Aimbot-AI/blob/master/data_generator/screenshot.py)
