@@ -2,15 +2,34 @@ name: build
 
 on:
   push:
+    # branches to consider in the event; optional, defaults to all
     branches:
       - master
+  # pull_request event is required only for autolabeler
   pull_request:
-    branches:
-      - master
-      - release/*
+    # Only following types are handled by the action, but one can default to all as well
+    types: [opened, reopened, synchronize]
+  # pull_request_target event is required for autolabeler to support PRs from forks
+  # pull_request_target:
+  #   types: [opened, reopened, synchronize]
+
+env:
+  REQUIREMENTS_FILE: data_generator/requirements.txt
+  PYINSTALLER_FILE: data_generator/screenshot.py
+  ARTIFACT_NAME: screenshot
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    permissions:
+      # write permission is required to create a github release
+      contents: write
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
+      pull-requests: write
+
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -28,12 +47,88 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.9
+          # # Enable these three lines if you run on act
+          # token: ${{ secrets.GITHUB_TOKEN }}
+          # cache: 'pip'
+
+      - name: Check ${{ env.REQUIREMENTS_FILE }} exists (Linux)
+        id: checkfile_linux
+        if: runner.os == 'Linux'
+        run: |
+          if [ -f ${{ env.REQUIREMENTS_FILE }} ]; then
+            echo "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "No ${{ env.REQUIREMENTS_FILE }} to build."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check ${{ env.REQUIREMENTS_FILE }} exists (Windows)
+        id: checkfile_windows
+        if: runner.os == 'Windows'
+        run: |
+          if (Test-Path "${{ env.REQUIREMENTS_FILE }}") {
+            Write-Output "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=true"
+          } else {
+            Write-Output "No ${{ env.REQUIREMENTS_FILE }} to build."
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=false"
+          }
+        shell: pwsh
 
       - name: build exe
+        if: steps.checkfile_linux.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         run: |
-          pip install -r data_generator/requirements.txt
-          pyinstaller --onefile data_generator/screenshot.py
+          pip install -r ${{ env.REQUIREMENTS_FILE }}
+          pyinstaller --onefile ${{ env.PYINSTALLER_FILE }} -n ${{ env.ARTIFACT_NAME }}_${{ runner.os }}
+
       # Optionally verify that it works (provided that it does not need user interaction)
       - uses: actions/upload-artifact@v3
+        if: steps.checkfile_linux.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         with:
+          name: ${{ env.ARTIFACT_NAME }}_${{ runner.os }}
           path: dist/*
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_id }}
+          release_name: Release ${{ github.run_id }}
+          draft: true
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset-windows
+        if: runner.os == 'Windows'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ env.ARTIFACT_NAME }}_${{ runner.os }}.exe
+          asset_name: ${{ env.ARTIFACT_NAME }}_${{ runner.os }}.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Asset
+        id: upload-release-asset-linux
+        if: runner.os == 'Linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ env.ARTIFACT_NAME }}_${{ runner.os }}
+          asset_name: ${{ env.ARTIFACT_NAME }}_${{ runner.os }}
+          asset_content_type: application/octet-stream
+
+      - name: Draft Release
+        uses: release-drafter/release-drafter@v5.25.0
+        id: draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          publish: true
+          commitish: ${{ github.sha }}
