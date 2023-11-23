@@ -42,10 +42,10 @@ jobs:
         run: |
           if [ -f ${{ env.REQUIREMENTS_FILE }} ]; then
             echo "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
-            echo "::set-output name=exists::true"
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "No ${{ env.REQUIREMENTS_FILE }} to build."
-            echo "::set-output name=exists::false"
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
         if: runner.os == 'Linux'
 
@@ -54,10 +54,10 @@ jobs:
         run: |
           if (Test-Path "${{ env.REQUIREMENTS_FILE }}") {
             Write-Output "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
-            echo "::set-output name=exists::true"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=true"
           } else {
             Write-Output "No ${{ env.REQUIREMENTS_FILE }} to build."
-            echo "::set-output name=exists::false"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exists=false"
           }
         shell: pwsh
         if: runner.os == 'Windows'
