@@ -36,4 +36,5 @@ jobs:
       # Optionally verify that it works (provided that it does not need user interaction)
       - uses: actions/upload-artifact@v3
         with:
+          name: screenshot
           path: dist/*
