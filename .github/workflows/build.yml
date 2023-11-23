@@ -125,7 +125,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Draft Release
-        uses: release-drafter/release-drafter@v5.24.0
+        uses: release-drafter/release-drafter@v5.25.0
         id: draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
