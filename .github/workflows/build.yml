@@ -32,7 +32,7 @@ jobs:
       - name: build exe
         run: |
           pip install -r data_generator/requirements.txt
-          pyinstaller --onefile --distpath ./data_generator --workpath ./data_generator data_generator/screenshot.py
+          pyinstaller --onefile data_generator/screenshot.py
       # Optionally verify that it works (provided that it does not need user interaction)
       - uses: actions/upload-artifact@v3
         with:
