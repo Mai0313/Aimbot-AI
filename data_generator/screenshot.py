@@ -45,4 +45,4 @@ if __name__ == "__main__":
         console.log(
             f"Screenshot saved to {output_path_folder} at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
-        time.sleep(1)
+        time.sleep(0.5)
