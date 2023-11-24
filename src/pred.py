@@ -109,4 +109,6 @@ if __name__ == "__main__":
         best_model_path=best_model_path,
         save_prediction=save_prediction,
     )
-    boxes, masks, probs, skeleton = pose_detection_eval.predict(predict_image_path=predict_image_path)
+    boxes, masks, probs, skeleton = pose_detection_eval.predict(
+        predict_image_path=predict_image_path
+    )
