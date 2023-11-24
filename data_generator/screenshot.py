@@ -38,7 +38,7 @@ class ScreenShot:
 if __name__ == "__main__":
     while True:
         output_path_folder = "outputs"
-        capture_percent = 1
+        capture_percent = 0.5
         ScreenShot(
             output_path_folder=output_path_folder, capture_percent=capture_percent
         ).take_screenshot()
