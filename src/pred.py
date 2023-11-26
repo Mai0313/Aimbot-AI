@@ -42,14 +42,12 @@ class PoseDetectionPredict(BaseModel):
     def predict(self):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
-        model = YOLO(self.best_model_path)
+        # model = YOLO(self.best_model_path)
 
         results = model.predict(
             self.predict_image_folder, save=self.save_prediction, stream=False, conf=0.5
         )
-        human_detected = 1
-        not_detected = 1
-        total_pic = 1
+        human_detected, not_detected, total_pic = 0, 0, 0
         for result in results:
             boxes = result.boxes
             masks = result.masks
@@ -80,7 +78,7 @@ if __name__ == "__main__":
     yolov8_model_weights = config.model.yolov8_model_weights
 
     best_model_path = config.model.yolov8_model_export
-    predict_image_folder = "./datasets/testing/chicken"  # config.data.predict_image_path
+    predict_image_folder = "./datasets/testing/bangdog"  # config.data.predict_image_path
 
     save_prediction = config.output_model.save_prediction
 
