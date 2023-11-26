@@ -37,16 +37,16 @@ class ScreenShot(BaseModel):
 
 class MouseController(BaseModel):
     position: list[Union[int, float]] = Field(..., min_items=2, max_items=2)
-    orig_shape: Optional[list]
+    # orig_shape: Optional[list[int]] = Field(default = [1080, 810])
     x: Optional[Union[int, float]] = Field(None, ge=0)
     y: Optional[Union[int, float]] = Field(None, ge=0)
 
     @model_validator(mode="before")
     def get_position(cls, values):
-        orig_width, orig_height = values.get("orig_shape")
-        screen_width, screen_height = pyautogui.size()
-        scale_width = screen_width / orig_width
-        scale_height = screen_height / orig_height
+        # orig_width, orig_height = values.get("orig_shape")
+        # screen_width, screen_height = pyautogui.size()
+        # scale_width = screen_width / orig_width
+        # scale_height = screen_height / orig_height
 
         values["x"], values["y"] = values["position"]
 
