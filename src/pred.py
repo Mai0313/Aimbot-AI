@@ -45,7 +45,7 @@ class PoseDetectionPredict(BaseModel):
         # model = YOLO(self.best_model_path)
 
         results = model.predict(
-            self.predict_image_folder, save=self.save_prediction, stream=False, conf=0.5
+            self.predict_image_folder, save=self.save_prediction, stream=True, conf=0.5
         )
         human_detected, not_detected, total_pic = 0, 0, 0
         for result in results:
@@ -75,13 +75,12 @@ class PoseDetectionPredict(BaseModel):
 
 
 if __name__ == "__main__":
-    config = OmegaConf.load("./configs/experiments/md1.yaml")
-    yolov8_model_weights = config.model.yolov8_model_weights
+    yolov8_model_weights = "./pretrained/yolov8x-pose-p6.pt"
 
-    best_model_path = config.model.yolov8_model_export
-    predict_image_folder = "./datasets/testing/bangdog"  # config.data.predict_image_path
+    best_model_path = "./runs/pose/train/weights/best.pt"  # This is finetune model
+    predict_image_folder = "./datasets/testing/toudou"  # config.data.predict_image_path
 
-    save_prediction = config.output_model.save_prediction
+    save_prediction = True
 
     pose_detection_eval = PoseDetectionPredict(
         yolov8_model_weights=yolov8_model_weights,
