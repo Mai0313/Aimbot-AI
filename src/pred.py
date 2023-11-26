@@ -67,11 +67,12 @@ class PoseDetectionPredict(BaseModel):
         console.log(f"{human_detected / total_pic * 100}% people detected")
         console.log(f"from {self.predict_image_folder.split('/')[-1]}")
 
-        with open(f"{self.predict_image_folder}/result.md", "w") as f:
-            f.write(f"{human_detected / total_pic * 100}% people detected\n")
-            f.write(f"{human_detected} people detected\n")
-            f.write(f"{not_detected} people not detected\n")
-            f.write(f"from {self.predict_image_folder.split('/')[-1]}")
+        if os.path.isdir(self.predict_image_folder):
+            with open(f"{self.predict_image_folder}/result.md", "w") as f:
+                f.write(f"{human_detected / total_pic * 100}% people detected\n")
+                f.write(f"{human_detected} people detected\n")
+                f.write(f"{not_detected} people not detected\n")
+                f.write(f"from {self.predict_image_folder.split('/')[-1]}")
         return boxes, masks, probs, skeleton
 
 
