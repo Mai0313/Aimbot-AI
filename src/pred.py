@@ -62,6 +62,7 @@ class PoseDetectionPredict(BaseModel):
                 not_detected += 1
         console.log(f"{human_detected} people detected")
         console.log(f"{not_detected} people not detected")
+        console.log(f"{total_pic} total picture")
         console.log(f"{human_detected / total_pic * 100}% people detected")
         console.log(f"from {self.predict_image_folder.split('/')[-1]}")
 
