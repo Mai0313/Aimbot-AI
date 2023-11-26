@@ -7,7 +7,7 @@ import pyautogui
 from pydantic import BaseModel, Field, model_validator
 
 pyautogui.PAUSE = 1
-pyautogui.FAILSAFE = True
+pyautogui.FAILSAFE = False
 
 
 class ScreenShot(BaseModel):
@@ -37,6 +37,7 @@ class ScreenShot(BaseModel):
 
 class MouseController(BaseModel):
     position: list[Union[int, float]] = Field(..., min_items=2, max_items=2)
+    orig_shape: Optional[list]
     x: Optional[Union[int, float]] = Field(None, ge=0)
     y: Optional[Union[int, float]] = Field(None, ge=0)
 
@@ -49,7 +50,7 @@ class MouseController(BaseModel):
 
         values["x"], values["y"] = values["position"]
 
-        # TODO: Should we resize the image?
+        # # TODO: Should we resize the image?
         # values["x"] = values["x"] * scale_width
         # values["y"] = values["y"] * scale_height
         return values

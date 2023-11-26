@@ -39,7 +39,7 @@ class PoseDetectionPredict(BaseModel):
 
     save_prediction: Optional[bool] = False
 
-    def predict(self, loggers = True):
+    def predict(self, loggers=True):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
         if self.best_model_path:
