@@ -1,5 +1,5 @@
 model:
-  yolov8_model_weights: ./pretrained/yolov8n-pose.pt
+  yolov8_model_weights: ./pretrained/yolov8x-pose-p6.pt
   yolov8_model_config: ./configs/models/v8/yolov8-pose.yaml
   yolov8_data_config: ./configs/datasets/coco8-pose.yaml
   yolov8_model_export: ./runs/pose/train/weights/best.pt
