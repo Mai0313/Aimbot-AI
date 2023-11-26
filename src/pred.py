@@ -39,7 +39,7 @@ class PoseDetectionPredict(BaseModel):
 
     save_prediction: Optional[bool] = False
 
-    def predict(self):
+    def predict(self, loggers = True):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
         if self.best_model_path:
@@ -61,11 +61,13 @@ class PoseDetectionPredict(BaseModel):
                 human_detected += 1
             elif len(boxes) == 0:
                 not_detected += 1
-        console.log(f"{human_detected} people detected")
-        console.log(f"{not_detected} people not detected")
-        console.log(f"{total_pic} total picture")
-        console.log(f"{human_detected / total_pic * 100}% people detected")
-        console.log(f"from {self.predict_image_folder.split('/')[-1]}")
+
+        if loggers:
+            console.log(f"{human_detected} people detected")
+            console.log(f"{not_detected} people not detected")
+            console.log(f"{total_pic} total picture")
+            console.log(f"{human_detected / total_pic * 100}% people detected")
+            console.log(f"from {self.predict_image_folder.split('/')[-1]}")
 
         if os.path.isdir(self.predict_image_folder):
             with open(f"{self.predict_image_folder}/result.md", "w") as f:
