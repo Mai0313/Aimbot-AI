@@ -34,7 +34,7 @@ class GetKeypoint(BaseModel):
 
 class PoseDetectionPredict(BaseModel):
     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
-    best_model_path: str = Field(..., pattern=r".*\.pt$", frozen=True)
+    best_model_path: Union[str, None] = Field(..., pattern=r".*\.pt$", frozen=True)
     predict_image_folder: str
 
     save_prediction: Optional[bool] = False
@@ -42,7 +42,8 @@ class PoseDetectionPredict(BaseModel):
     def predict(self):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
-        # model = YOLO(self.best_model_path)
+        if self.best_model_path:
+            model = YOLO(self.best_model_path)
 
         results = model.predict(
             self.predict_image_folder, save=self.save_prediction, stream=True, conf=0.5
@@ -77,7 +78,7 @@ class PoseDetectionPredict(BaseModel):
 if __name__ == "__main__":
     yolov8_model_weights = "./pretrained/yolov8x-pose-p6.pt"
 
-    best_model_path = "./runs/pose/train/weights/best.pt"  # This is finetune model
+    best_model_path = None  # This is finetune model
     predict_image_folder = "./datasets/testing/toudou"  # config.data.predict_image_path
 
     save_prediction = True
