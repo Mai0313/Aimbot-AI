@@ -35,6 +35,18 @@ class ScreenShot(BaseModel):
         screenshot.save(f"{self.output_path_folder}/{filename}.png")
 
 
+class MouseListener(BaseModel):
+    screenshotter: ScreenShot
+
+    def on_click(self, x, y, button, pressed):
+        if button == mouse.Button.right and pressed:
+            self.screenshotter.take_screenshot()
+
+    def start_listening(self):
+        with mouse.Listener(on_click=self.on_click) as listener:
+            listener.join()
+
+
 class MouseController(BaseModel):
     position: list[Union[int, float]] = Field(..., min_items=2, max_items=2)
     # orig_shape: Optional[list[int]] = Field(default = [1080, 810])
