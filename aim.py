@@ -4,9 +4,10 @@ from typing import Optional
 
 from omegaconf import OmegaConf
 from pydantic import BaseModel, Field
+from pynput import mouse
 from rich.console import Console
 
-from src.click import MouseController, ScreenShot
+from src.click import MouseController, MouseListener, ScreenShot
 from src.pred import PoseDetectionPredict
 
 console = Console()
@@ -18,7 +19,7 @@ class BodyDetection(BaseModel):
 
         best_model_path = None
 
-        save_prediction = False
+        save_prediction = True
 
         pose_detection_eval = PoseDetectionPredict(
             yolov8_model_weights=yolov8_model_weights,
@@ -27,18 +28,35 @@ class BodyDetection(BaseModel):
             predict_image_folder=predict_image_folder,
         )
         boxes, masks, probs, skeleton = pose_detection_eval.predict(loggers=False)
-        if len(boxes) != len(skeleton):
-            raise ValueError("An error occurred in the number of people.")
+        # if len(boxes) != len(skeleton):
+        #     raise ValueError("An error occurred in the number of people.")
         return skeleton
 
 
-class ScreenShotTaker(ScreenShot):
+class AimbotUtils(ScreenShot):
     def get_screenshots(self):
         capture_percent = 1.0
         ScreenShot(
             output_path_folder=self.output_path_folder, capture_percent=capture_percent
         ).take_screenshot()
         return self.output_path_folder
+
+    def start_mouse_listener(self):
+        def on_click(x, y, button, pressed):
+            aimbot = BodyDetection()
+            if button == mouse.Button.right and pressed:
+                image_output_folder = self.get_screenshots()
+                skeleton = aimbot.get_skeleton(predict_image_folder=image_output_folder)
+                # shutil.rmtree(output_path_folder)
+                for human_no, human_skeleton in enumerate(skeleton):
+                    head = human_skeleton[1:3]
+                    upper_body = human_skeleton[4:7]
+                    lower_body = human_skeleton[9:]
+                    aim_position = random.choice(upper_body)
+                    AimBot(position=aim_position).trigger()
+
+        with mouse.Listener(on_click=on_click) as listener:
+            listener.join()
 
 
 class AimBot(MouseController):
@@ -53,13 +71,15 @@ if __name__ == "__main__":
 
     predict_image_folder = "./datasets/test_screen.png"
     output_path_folder = "./outputs"
-    output_path_folder = ScreenShotTaker(output_path_folder=output_path_folder).get_screenshots()
-    skeleton = BodyDetection().get_skeleton(predict_image_folder=output_path_folder)
-    shutil.rmtree(output_path_folder)
+    screenshot_taker = AimbotUtils(output_path_folder=output_path_folder)
+    screenshot_taker.start_mouse_listener()
+    # aimbot = BodyDetection()
+    # skeleton = aimbot.get_skeleton(predict_image_folder=output_path_folder)
+    # shutil.rmtree(output_path_folder)
 
-    for human_no, human_skeleton in enumerate(skeleton):
-        head = human_skeleton[1:3]
-        upper_body = human_skeleton[4:7]
-        lower_body = human_skeleton[9:]
-        aim_position = random.choice(upper_body)
-        AimBot(position = aim_position).trigger()
+    # for human_no, human_skeleton in enumerate(skeleton):
+    #     head = human_skeleton[1:3]
+    #     upper_body = human_skeleton[4:7]
+    #     lower_body = human_skeleton[9:]
+    #     aim_position = random.choice(upper_body)
+    #     AimBot(position = aim_position).trigger()

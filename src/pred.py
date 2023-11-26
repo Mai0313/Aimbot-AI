@@ -82,7 +82,7 @@ if __name__ == "__main__":
     yolov8_model_weights = "./pretrained/yolov8x-pose-p6.pt"
 
     best_model_path = None  # This is finetune model
-    predict_image_folder = "./datasets/testing/toudou"  # config.data.predict_image_path
+    predict_image_folder = "./outputs/pubg_mobile.png"  # config.data.predict_image_path
 
     save_prediction = True
 
