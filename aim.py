@@ -44,7 +44,7 @@ class ScreenShotTaker(ScreenShot):
 class AimBot(MouseController):
     def trigger(self):
         self.move_mouse()
-        self.right_click()
+        self.click()
 
 
 if __name__ == "__main__":
@@ -62,6 +62,4 @@ if __name__ == "__main__":
         upper_body = human_skeleton[4:7]
         lower_body = human_skeleton[9:]
         aim_position = random.choice(upper_body)
-        # console.log(aim_position)
         AimBot(position = aim_position).trigger()
-        # # break
