@@ -28,10 +28,10 @@ class BodyDetection(BaseModel):
             predict_image_folder=predict_image_folder,
         )
         boxes, masks, probs, skeleton = pose_detection_eval.predict(loggers=False)
-        # if len(boxes) != len(skeleton):
-        #     raise ValueError("An error occurred in the number of people.")
         return skeleton
 
+aimbot = BodyDetection()
+console.log("Model has been loaded.")
 
 class AimbotUtils(ScreenShot):
     def get_screenshots(self):
@@ -43,17 +43,16 @@ class AimbotUtils(ScreenShot):
 
     def start_mouse_listener(self):
         def on_click(x, y, button, pressed):
-            aimbot = BodyDetection()
-            if button == mouse.Button.right and pressed:
+            if button == mouse.Button.left and pressed:
                 image_output_folder = self.get_screenshots()
                 skeleton = aimbot.get_skeleton(predict_image_folder=image_output_folder)
-                # shutil.rmtree(output_path_folder)
+                shutil.rmtree(output_path_folder)
+                skeleton = [skeleton[0]]
                 for human_no, human_skeleton in enumerate(skeleton):
-                    head = human_skeleton[1:3]
                     upper_body = human_skeleton[4:7]
-                    lower_body = human_skeleton[9:]
                     aim_position = random.choice(upper_body)
                     AimBot(position=aim_position).trigger()
+                    return
 
         with mouse.Listener(on_click=on_click) as listener:
             listener.join()
