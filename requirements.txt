@@ -19,3 +19,4 @@ rich
 dvc_gdrive
 pynput
 onnx
+nvidia-pyindex
