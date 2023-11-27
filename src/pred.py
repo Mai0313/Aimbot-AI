@@ -50,6 +50,8 @@ class PoseDetectionPredict(BaseModel):
             self.predict_image_folder, save=self.save_prediction, stream=True, conf=0.5
         )
         human_detected, not_detected, total_pic = 0, 0, 0
+        for result in results:
+            pass
         try:
             for result in results:
                 boxes = result.boxes
@@ -83,7 +85,7 @@ class PoseDetectionPredict(BaseModel):
 
 
 if __name__ == "__main__":
-    yolov8_model_weights = "./pretrained/yolov8n-seg.pt"
+    yolov8_model_weights = "./pretrained/yolov8-cs2.pt"
 
     best_model_path = None  # This is finetune model
     predict_image_folder = "./datasets/test_images.png"  # config.data.predict_image_path
