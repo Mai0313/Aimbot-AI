@@ -15,10 +15,7 @@ console = Console()
 class PoseDetectionExport(BaseModel):
     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
 
-    yolov8_model_export_format: str = Field(
-        default="onnx",
-        description="It can be one of these: \n onnx, torchscript, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, ncnn",
-    )
+    yolov8_model_export_format: list[str] = Field(..., description="It can be a list of these: \n onnx, torchscript, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, ncnn")
 
     @model_validator(mode="before")
     def check_model_format(cls, values):
@@ -36,23 +33,23 @@ class PoseDetectionExport(BaseModel):
             "paddle",
             "ncnn",
         ]
-        if values["yolov8_model_export_format"] not in export_model_list:
+        if [f for f in values["yolov8_model_export_format"] if f not in export_model_list]:
             raise ValueError(
                 f"yolov8_model_export_format must be one of these: {export_model_list}"
             )
         return values
 
     def export_model(self):
-        console.log(f"Saving Model in {self.yolov8_model_export_format}...")
-        model = YOLO(self.yolov8_model_weights)
-        model_output_dir = model.export(format=self.yolov8_model_export_format)
-        console.log(f"Model saved in {model_output_dir}")
+        for export_format in self.yolov8_model_export_format:
+            console.log(f"Saving Model in {export_format}...")
+            model = YOLO(self.yolov8_model_weights)
+            model_output_dir = model.export(format=export_format)
+            console.log(f"Model saved in {model_output_dir}")
 
 
 if __name__ == "__main__":
-    config = OmegaConf.load("./configs/experiments/md1.yaml")
-    yolov8_model_weights = "./pretrained/yolov8x-pose-p6.pt"  # config.model.yolov8_model_weights
-    yolov8_model_export_format = config.output_model.yolov8_model_export_format
+    yolov8_model_weights = "./pretrained/finetuned/csgo/yolov8s-csgo.pt"  # config.model.yolov8_model_weights
+    yolov8_model_export_format = ["onnx", "torchscript"]  # config.output_model.yolov8_model_export_format
 
     pose_detection_export = PoseDetectionExport(
         yolov8_model_weights=yolov8_model_weights,
