@@ -15,7 +15,10 @@ console = Console()
 class PoseDetectionExport(BaseModel):
     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
 
-    yolov8_model_export_format: list[str] = Field(..., description="It can be a list of these: \n onnx, torchscript, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, ncnn")
+    yolov8_model_export_format: list[str] = Field(
+        ...,
+        description="It can be a list of these: \n onnx, torchscript, openvino, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, ncnn",
+    )
 
     @model_validator(mode="before")
     def check_model_format(cls, values):
@@ -48,8 +51,13 @@ class PoseDetectionExport(BaseModel):
 
 
 if __name__ == "__main__":
-    yolov8_model_weights = "./pretrained/finetuned/csgo/yolov8s-csgo.pt"  # config.model.yolov8_model_weights
-    yolov8_model_export_format = ["onnx", "torchscript"]  # config.output_model.yolov8_model_export_format
+    yolov8_model_weights = (
+        "./pretrained/finetuned/csgo/yolov8s-csgo.pt"  # config.model.yolov8_model_weights
+    )
+    yolov8_model_export_format = [
+        "onnx",
+        "torchscript",
+    ]  # config.output_model.yolov8_model_export_format
 
     pose_detection_export = PoseDetectionExport(
         yolov8_model_weights=yolov8_model_weights,
