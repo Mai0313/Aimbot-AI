@@ -30,8 +30,10 @@ class BodyDetection(BaseModel):
         boxes, masks, probs, skeleton = pose_detection_eval.predict(loggers=False)
         return skeleton
 
+
 aimbot = BodyDetection()
 console.log("Model has been loaded.")
+
 
 class AimbotUtils(ScreenShot):
     def get_screenshots(self):

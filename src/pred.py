@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 import rootutils
 from omegaconf import OmegaConf
+from PIL import Image
 from pydantic import BaseModel, Field, model_validator
 from rich.console import Console
 from ultralytics import YOLO
@@ -33,8 +34,8 @@ class GetKeypoint(BaseModel):
 
 
 class PoseDetectionPredict(BaseModel):
-    yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
-    best_model_path: Union[str, None] = Field(..., pattern=r".*\.pt$", frozen=True)
+    yolov8_model_weights: str = Field(..., frozen=True)
+    best_model_path: Union[str, None] = Field(..., frozen=True)
     predict_image_folder: str
 
     save_prediction: Optional[bool] = False
@@ -79,10 +80,10 @@ class PoseDetectionPredict(BaseModel):
 
 
 if __name__ == "__main__":
-    yolov8_model_weights = "./pretrained/yolov8x-pose-p6.pt"
+    yolov8_model_weights = "./pretrained/yolov8s-pose.pt"
 
     best_model_path = None  # This is finetune model
-    predict_image_folder = "./outputs/pubg_mobile.png"  # config.data.predict_image_path
+    predict_image_folder = "./datasets/testing/oldwang/3f8555aaf2b4825fe47fcd6c956e62e3.png"  # config.data.predict_image_path
 
     save_prediction = True
 
@@ -91,5 +92,4 @@ if __name__ == "__main__":
         best_model_path=best_model_path,
         save_prediction=save_prediction,
         predict_image_folder=predict_image_folder,
-    )
-    boxes, masks, probs, skeleton = pose_detection_eval.predict()
+    ).predict()
