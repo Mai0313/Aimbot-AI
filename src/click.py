@@ -7,7 +7,7 @@ import pyautogui
 from pydantic import BaseModel, Field, model_validator
 
 pyautogui.PAUSE = 1
-pyautogui.FAILSAFE = True
+pyautogui.FAILSAFE = False
 
 
 class ScreenShot(BaseModel):
@@ -35,21 +35,34 @@ class ScreenShot(BaseModel):
         screenshot.save(f"{self.output_path_folder}/{filename}.png")
 
 
+class MouseListener(BaseModel):
+    screenshotter: ScreenShot
+
+    def on_click(self, x, y, button, pressed):
+        if button == mouse.Button.right and pressed:
+            self.screenshotter.take_screenshot()
+
+    def start_listening(self):
+        with mouse.Listener(on_click=self.on_click) as listener:
+            listener.join()
+
+
 class MouseController(BaseModel):
     position: list[Union[int, float]] = Field(..., min_items=2, max_items=2)
+    # orig_shape: Optional[list[int]] = Field(default = [1080, 810])
     x: Optional[Union[int, float]] = Field(None, ge=0)
     y: Optional[Union[int, float]] = Field(None, ge=0)
 
     @model_validator(mode="before")
     def get_position(cls, values):
-        orig_width, orig_height = values.get("orig_shape")
-        screen_width, screen_height = pyautogui.size()
-        scale_width = screen_width / orig_width
-        scale_height = screen_height / orig_height
+        # orig_width, orig_height = values.get("orig_shape")
+        # screen_width, screen_height = pyautogui.size()
+        # scale_width = screen_width / orig_width
+        # scale_height = screen_height / orig_height
 
         values["x"], values["y"] = values["position"]
 
-        # TODO: Should we resize the image?
+        # # TODO: Should we resize the image?
         # values["x"] = values["x"] * scale_width
         # values["y"] = values["y"] * scale_height
         return values

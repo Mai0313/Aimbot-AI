@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 import rootutils
 from omegaconf import OmegaConf
+from PIL import Image
 from pydantic import BaseModel, Field, model_validator
 from rich.console import Console
 from ultralytics import YOLO
@@ -33,82 +34,67 @@ class GetKeypoint(BaseModel):
 
 
 class PoseDetectionPredict(BaseModel):
-    yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
-    best_model_path: str = Field(..., pattern=r".*\.pt$", frozen=True)
+    yolov8_model_weights: str = Field(..., frozen=True)
+    best_model_path: Union[str, None] = Field(..., frozen=True)
     predict_image_folder: str
 
     save_prediction: Optional[bool] = False
 
-    def predict(self):
+    def predict(self, loggers=True):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
-        model = YOLO(self.best_model_path)
+        if self.best_model_path:
+            model = YOLO(self.best_model_path)
 
         results = model.predict(
             self.predict_image_folder, save=self.save_prediction, stream=True, conf=0.5
         )
+        human_detected, not_detected, total_pic = 0, 0, 0
         for result in results:
-            # This part is not in used, but it is useful to know.
-            boxes = result.boxes
-            masks = result.masks
-            keypoints = result.keypoints
-            probs = result.probs
-            skeleton = keypoints.xy
-            skeleton = skeleton.cpu().numpy()
-        console.log(f"{len(skeleton)} people detected")
-        return boxes, masks, probs, skeleton
+            pass
+        try:
+            for result in results:
+                boxes = result.boxes
+                masks = result.masks
+                keypoints = result.keypoints
+                probs = result.probs
+                skeleton = keypoints.xy
+                skeleton = skeleton.cpu().numpy()
+                total_pic += 1
+                if len(boxes) >= 1:
+                    human_detected += 1
+                elif len(boxes) == 0:
+                    not_detected += 1
 
+            if loggers:
+                console.log(f"{human_detected} people detected")
+                console.log(f"{not_detected} people not detected")
+                console.log(f"{total_pic} total picture")
+                console.log(f"{human_detected / total_pic * 100}% people detected")
+                console.log(f"from {self.predict_image_folder.split('/')[-1]}")
 
-# class PoseDetectionPredict(BaseModel):
-#     yolov8_model_weights: str = Field(..., pattern=r".*\.pt$", frozen=True)
-#     best_model_path: str = Field(..., pattern=r".*\.pt$", frozen=True)
-#     predict_image_path: Union[str, list]
-
-#     save_prediction: Optional[bool] = False
-
-#     @model_validator(mode="before")
-#     def get_predict_image_path(cls, values):
-#         if os.path.isdir(values["predict_image_path"]):
-#             predict_images = [f for f in os.listdir(values["predict_image_path"])]
-#             predict_images = [f"{values['predict_image_path']}/{f}" for f in predict_images]
-#             values["predict_image_path"] = predict_images
-#         return values
-
-#     def predict(self):
-#         console.log("Start prediction...")
-#         model = YOLO(self.yolov8_model_weights)
-#         model = YOLO(self.best_model_path)
-#         if isinstance(self.predict_image_path, list):
-#             self.predict_image_path = self.predict_image_path[:50]
-
-#         results = model.predict(
-#             self.predict_image_path, save=self.save_prediction, stream=True, conf=0.5
-#         )
-#         for result in results:
-#             # This part is not in used, but it is useful to know.
-#             boxes = result.boxes
-#             masks = result.masks
-#             keypoints = result.keypoints
-#             probs = result.probs
-#             skeleton = keypoints.xy
-#             skeleton = skeleton.cpu().numpy()
-#         return boxes, masks, probs, skeleton
+            if os.path.isdir(self.predict_image_folder):
+                with open(f"{self.predict_image_folder}/result.md", "w") as f:
+                    f.write(f"{human_detected / total_pic * 100}% people detected\n")
+                    f.write(f"{human_detected} people detected\n")
+                    f.write(f"{not_detected} people not detected\n")
+                    f.write(f"from {self.predict_image_folder.split('/')[-1]}")
+            return boxes, masks, probs, skeleton
+        except Exception as e:
+            return None, None, None, None
 
 
 if __name__ == "__main__":
-    config = OmegaConf.load("./configs/experiments/md1.yaml")
-    yolov8_model_weights = config.model.yolov8_model_weights
+    yolov8_model_weights = "./pretrained/yolov8-cs2.pt"
 
-    best_model_path = config.model.yolov8_model_export
-    predict_image_path = "./datasets/bangdog"  # config.data.predict_image_path
+    best_model_path = None  # This is finetune model
+    predict_image_folder = "./datasets/test_images.png"  # config.data.predict_image_path
 
-    save_prediction = config.output_model.save_prediction
+    save_prediction = True
 
     pose_detection_eval = PoseDetectionPredict(
         yolov8_model_weights=yolov8_model_weights,
         best_model_path=best_model_path,
         save_prediction=save_prediction,
-    )
-    boxes, masks, probs, skeleton = pose_detection_eval.predict(
-        predict_image_path=predict_image_path
-    )
+        predict_image_folder=predict_image_folder,
+    ).predict()

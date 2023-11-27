@@ -17,3 +17,5 @@ onnxruntime
 omegaconf
 rich
 dvc_gdrive
+pynput
+onnx
