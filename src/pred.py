@@ -80,7 +80,7 @@ class PoseDetectionPredict(BaseModel):
 
 
 if __name__ == "__main__":
-    yolov8_model_weights = "./pretrained/yolov8s-pose.pt"
+    yolov8_model_weights = "./pretrained/yolov8s_custom.pt"
 
     best_model_path = None  # This is finetune model
     predict_image_folder = "./datasets/testing/oldwang/3f8555aaf2b4825fe47fcd6c956e62e3.png"  # config.data.predict_image_path
