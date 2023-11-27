@@ -86,7 +86,7 @@ if __name__ == "__main__":
     yolov8_model_weights = "./pretrained/yolov8n-seg.pt"
 
     best_model_path = None  # This is finetune model
-    predict_image_folder = "./datasets/testing/oldwang/3f8555aaf2b4825fe47fcd6c956e62e3.png"  # config.data.predict_image_path
+    predict_image_folder = "./datasets/test_images.png"  # config.data.predict_image_path
 
     save_prediction = True
 
