@@ -40,6 +40,34 @@ class PoseDetectionPredict(BaseModel):
 
     save_prediction: Optional[bool] = False
 
+    def __loggers(self, results):
+        human_detected, not_detected, total_pic = 0, 0, 0
+        for result in results:
+            boxes = result.boxes
+            masks = result.masks
+            keypoints = result.keypoints
+            probs = result.probs
+            skeleton = keypoints.xy
+            skeleton = skeleton.cpu().numpy()
+            total_pic += 1
+            if len(boxes) >= 1:
+                human_detected += 1
+            elif len(boxes) == 0:
+                not_detected += 1
+        console.log(f"{human_detected} people detected")
+        console.log(f"{not_detected} people not detected")
+        console.log(f"{total_pic} total picture")
+        console.log(f"{human_detected / total_pic * 100}% people detected")
+        console.log(f"from {self.predict_image_folder.split('/')[-1]}")
+
+        if os.path.isdir(self.predict_image_folder):
+            with open(f"{self.predict_image_folder}/result.md", "w") as f:
+                f.write(f"{human_detected / total_pic * 100}% people detected\n")
+                f.write(f"{human_detected} people detected\n")
+                f.write(f"{not_detected} people not detected\n")
+                f.write(f"from {self.predict_image_folder.split('/')[-1]}")
+        return boxes, masks, probs, skeleton
+
     def predict(self, loggers=True):
         console.log("Start prediction...")
         model = YOLO(self.yolov8_model_weights)
@@ -49,43 +77,16 @@ class PoseDetectionPredict(BaseModel):
         results = model.predict(
             self.predict_image_folder, save=self.save_prediction, stream=True, conf=0.5
         )
-        human_detected, not_detected, total_pic = 0, 0, 0
-        for result in results:
-            pass
         try:
-            for result in results:
-                boxes = result.boxes
-                masks = result.masks
-                keypoints = result.keypoints
-                probs = result.probs
-                skeleton = keypoints.xy
-                skeleton = skeleton.cpu().numpy()
-                total_pic += 1
-                if len(boxes) >= 1:
-                    human_detected += 1
-                elif len(boxes) == 0:
-                    not_detected += 1
-
             if loggers:
-                console.log(f"{human_detected} people detected")
-                console.log(f"{not_detected} people not detected")
-                console.log(f"{total_pic} total picture")
-                console.log(f"{human_detected / total_pic * 100}% people detected")
-                console.log(f"from {self.predict_image_folder.split('/')[-1]}")
-
-            if os.path.isdir(self.predict_image_folder):
-                with open(f"{self.predict_image_folder}/result.md", "w") as f:
-                    f.write(f"{human_detected / total_pic * 100}% people detected\n")
-                    f.write(f"{human_detected} people detected\n")
-                    f.write(f"{not_detected} people not detected\n")
-                    f.write(f"from {self.predict_image_folder.split('/')[-1]}")
+                boxes, masks, probs, skeleton = self.__loggers(results)
             return boxes, masks, probs, skeleton
         except Exception as e:
             return None, None, None, None
 
 
 if __name__ == "__main__":
-    yolov8_model_weights = "./pretrained/yolov8-cs2.pt"
+    yolov8_model_weights = "./pretrained/finetuned/csgo/yolov8m-csgo.pt"
 
     best_model_path = None  # This is finetune model
     predict_image_folder = "./datasets/test_images.png"  # config.data.predict_image_path
