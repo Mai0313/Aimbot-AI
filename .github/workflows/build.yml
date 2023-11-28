@@ -78,26 +78,32 @@ jobs:
           python-version: 3.9
           token: ${{ secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
 
-      - name: Check if ${{ env.REQUIREMENTS_FILE }} exists
-        id: checkfile
+      # For Linux/MacOS
+      - name: Check if ${{ env.REQUIREMENTS_FILE }} exists (Unix)
+        id: checkfile_unix
         run: |
-          file_exists=false
-          if [ "${{ runner.os }}" == "Linux" ] && [ -f ${{ env.REQUIREMENTS_FILE }} ]; then
-            file_exists=true
-          elif [ "${{ runner.os }}" == "Windows" ] && (Test-Path "${{ env.REQUIREMENTS_FILE }}"); then
-            file_exists=true
-          fi
-          if [ $file_exists == true ]; then
-            echo "${{ env.REQUIREMENTS_FILE }} exists, proceeding to build."
+          if [ -f "${{ env.REQUIREMENTS_FILE }}" ]; then
             echo "::set-output name=exists::true"
           else
-            echo "No ${{ env.REQUIREMENTS_FILE }} to build."
             echo "::set-output name=exists::false"
           fi
+        if: runner.os != 'Windows'
         shell: bash
 
+      # For Windows
+      - name: Check if ${{ env.REQUIREMENTS_FILE }} exists (Windows)
+        id: checkfile_windows
+        run: |
+          if (Test-Path "${{ env.REQUIREMENTS_FILE }}") {
+            echo "::set-output name=exists::true"
+          } else {
+            echo "::set-output name=exists::false"
+          }
+        if: runner.os == 'Windows'
+        shell: pwsh  # PowerShell
+
       - name: build exe
-        if: steps.checkfile.outputs.exists == 'true'
+        if: steps.checkfile_unix.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         run: |
           pip install -r ${{ env.REQUIREMENTS_FILE }}
           pyinstaller --onefile ${{ env.PYINSTALLER_FILE }} -n ${{ env.ARTIFACT_NAME }}_${{ runner.os }}
@@ -105,7 +111,7 @@ jobs:
       # Optionally verify that it works (provided that it does not need user interaction)
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
-        if: steps.checkfile.outputs.exists == 'true'
+        if: steps.checkfile_unix.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         with:
           name: ${{ env.ARTIFACT_NAME }}_${{ runner.os }}
           path: dist/*
@@ -123,7 +129,7 @@ jobs:
 
       - name: Upload Release Asset
         id: upload-release-asset
-        if: steps.checkfile.outputs.exists == 'true'
+        if: steps.checkfile_unix.outputs.exists == 'true' || steps.checkfile_windows.outputs.exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.GH_TOKEN }}
