@@ -84,6 +84,11 @@ class PoseDetectionPredict(BaseModel):
         except Exception as e:
             return None, None, None, None
 
+    def predict_master(self):
+        console.log("Start prediction...")
+        cmd = f"""yolo mode=predict model={self.yolov8_model_weights} source={self.predict_image_folder}"""
+        os.system(cmd)
+
 
 if __name__ == "__main__":
     yolov8_model_weights = "./pretrained/finetuned/csgo/yolov8m-csgo.pt"
