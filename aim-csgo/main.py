@@ -4,10 +4,11 @@ import pynput  # Mouse control
 import torch
 import win32con
 import win32gui
-from cs_model import load_model
+
+# from cs_model import load_model
 from grabscreen import grab_screen
-from utils.augmentations import letterbox
-from utils.general import non_max_suppression, scale_coords, xyxy2xywh
+from ultralytics.data.augment import LetterBox
+from ultralytics.utils.ops import non_max_suppression, scale_coords, xyxy2xywh
 
 CUDA_INFO = "YES" if torch.cuda.is_available() else "No"
 
@@ -23,7 +24,7 @@ iou_thres = 0.05  # NMS IoU threshold
 x, y = (1920, 1080)
 re_x, re_y = (1920, 1080)
 
-model = load_model()
+model = load_model()  # noqa: F821
 stride = int(model.stride.max())
 names = model.module.names if hasattr(model, "module") else model.names
 
@@ -42,6 +43,7 @@ mouse = pynput.mouse.Controller()
 #             lock_mode = not lock_mode
 #             print('lock mode', 'no' if lock_mode else 'off')
 
+
 def lock(aims, mouse, x, y):
     mouse_pos_x, mouse_pos_y = mouse.position
     dist_list = []
@@ -58,6 +60,7 @@ def lock(aims, mouse, x, y):
     if tag == 0:
         mouse.position = (x_center, y_center)
 
+
 # Mouse listening function(blocking version)
 def on_move(x, y):
     pass
@@ -67,7 +70,7 @@ def on_click(x, y, button, pressed):
     global lock_mode
     if pressed and button == button.x2:  # mouse button 5
         lock_mode = not lock_mode
-        print("Lock mode:", "ON" if lock_mode else "OFF")
+        # print("Lock mode:", "ON" if lock_mode else "OFF")
 
 
 def on_scroll(x, y, dx, dy):
@@ -82,7 +85,7 @@ while True:
     img0 = grab_screen(region=(0, 0, x, y))
     img0 = cv2.resize(img0, (re_x, re_y))
 
-    img = letterbox(img0, imgsz, stride=stride)[0]
+    img = LetterBox(img0, imgsz, stride=stride)[0]
 
     img = img.transpose((2, 0, 1))[::-1]
     img = np.ascontiguousarray(img)
@@ -100,7 +103,10 @@ while True:
     aims = []
     for i, det in enumerate(pred):
         s = ""
-        s += "%gx%g" % img.shape[2:]
+        # TODO: Check if it works.
+        # s += "{}x{}".format(img.shape[1], img.shape[0])
+        # Original: s += "%gx%g" % img.shape[2:]
+        s += f"{img.shape[1]}x{img.shape[0]}"
         gn = torch.tensor(img0.shape)[[1, 0, 1, 0]]
         if len(det):
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img0.shape).round()
