@@ -4,7 +4,7 @@ default_language_version:
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit.git
     # Ruff version.
-    rev: v0.1.6
+    rev: v0.3.4
     hooks:
       - id: ruff
         args:
@@ -61,13 +61,13 @@ repos:
 
   # jupyter notebook cell output clearing
   - repo: https://github.com/kynan/nbstripout.git
-    rev: 0.6.1
+    rev: 0.7.1
     hooks:
       - id: nbstripout
 
   # jupyter notebook linting
   - repo: https://github.com/nbQA-dev/nbQA.git
-    rev: 1.7.1
+    rev: 1.8.5
     hooks:
       - id: nbqa-ruff
         args:
